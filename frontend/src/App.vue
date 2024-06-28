@@ -1,47 +1,59 @@
-<script setup>
-import HelloWorld from './components/HelloWorld.vue'
-import TheWelcome from './components/TheWelcome.vue'
-</script>
-
 <template>
-  <header>
-    <img alt="Vue logo" class="logo" src="./assets/logo.svg" width="125" height="125" />
-
-    <div class="wrapper">
-      <HelloWorld msg="You did it!" />
+  <div>
+    <div v-if="account.id">
+      <p>HI, {{ account.name }}</p>
+      <button @click="logout()">logout</button>
     </div>
-  </header>
-
-  <main>
-    <TheWelcome />
-  </main>
+    <div v-else>
+      <label for="loginId">
+        <span>Id</span>
+        <input type="text" id="loginId" v-model="form.loginId">
+      </label>
+      <label for="loginPwd">
+        <span>Pwd</span>
+        <input type="password" id="loginPwd" v-model="form.loginPwd">
+      </label>
+      <hr>
+      <button @click="submit()">login</button>
+    </div>
+  </div>
 </template>
 
-<style scoped>
-header {
-  line-height: 1.5;
+<script setup>
+import { ref } from "vue";
+import axios from 'axios'
+
+const account = ref({
+  id:null,
+  name:''
+})
+const form = ref({
+  loginId:'',
+  loginPwd: ''
+})
+
+const getAccount = async () => {
+  await axios.get('/api/account').then((res)=>{
+  account.value= res.data
+})}
+getAccount()
+
+const submit = ()=>{
+  axios.post('/api/account', form.value).then((res)=>{
+    account.value= res.data
+    alert('login success')
+  }).catch(()=>alert('login fail'))
 }
 
-.logo {
-  display: block;
-  margin: 0 auto 2rem;
+const logout = () =>{
+  axios.delete('/api/account').then(()=>{
+    alert('logout success');
+    account.value.id = null;
+    account.value.name = '';
+  })
 }
+</script>
 
-@media (min-width: 1024px) {
-  header {
-    display: flex;
-    place-items: center;
-    padding-right: calc(var(--section-gap) / 2);
-  }
+<style lang="scss" scoped>
 
-  .logo {
-    margin: 0 2rem 0 0;
-  }
-
-  header .wrapper {
-    display: flex;
-    place-items: flex-start;
-    flex-wrap: wrap;
-  }
-}
 </style>
